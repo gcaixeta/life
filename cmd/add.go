@@ -10,7 +10,9 @@ import (
 )
 
 func init() {
+	var title, description string
 	rootCmd.AddCommand(addCmd)
+	addCmd.Flags().StringVarP(&title)
 }
 
 var addCmd = &cobra.Command{
