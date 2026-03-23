@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	flag "github.com/spf13/pflag"
 )
 
 type Origin string
@@ -25,6 +27,25 @@ type Event struct {
 	Category    string
 	Project     string
 	Origin      Origin
+}
+
+func NewEventFromFlags(flags *flag.FlagSet) (*Event, error) {
+	title, err := flags.GetString("title")
+	if err != nil {
+		return nil, err
+	}
+
+	description, err := flags.GetString("description")
+	if err != nil {
+		return nil, err
+	}
+
+	return &Event{
+		Title:       title,
+		Description: description,
+		StartedAt:   time.Now(),
+		Origin:      Manual,
+	}, nil
 }
 
 func NewEventFromPrompt() (*Event, error) {

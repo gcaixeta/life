@@ -7,12 +7,17 @@ import (
 	"github.com/gcaixeta/life/internal/db"
 	"github.com/gcaixeta/life/internal/event"
 	"github.com/spf13/cobra"
+
+	flag "github.com/spf13/pflag"
 )
 
+var title, description string
+
 func init() {
-	var title, description string
 	rootCmd.AddCommand(addCmd)
-	addCmd.Flags().StringVarP(&title)
+	addCmd.Flags().StringVarP(&title, "title", "t", "", "Title of the event")
+	addCmd.Flags().StringVarP(&description, "description", "d", "", "Description for the event")
+	addCmd.MarkFlagsRequiredTogether("title", "description")
 }
 
 var addCmd = &cobra.Command{
@@ -27,9 +32,18 @@ var addCmd = &cobra.Command{
 			panic(err)
 		}
 
-		newEvent, err := event.NewEventFromPrompt()
-		if err != nil {
-			panic(err)
+		var newEvent *event.Event
+
+		if !flagsPresent(cmd.Flags()) {
+			newEvent, err = event.NewEventFromPrompt()
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			newEvent, err = event.NewEventFromFlags(cmd.Flags())
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		repo := event.NewRepository(conn)
@@ -39,6 +53,9 @@ var addCmd = &cobra.Command{
 		}
 
 		fmt.Printf("\n%v\n", newEvent)
-
 	},
+}
+
+func flagsPresent(flags *flag.FlagSet) bool {
+	return flags.Changed("title") && flags.Changed("description")
 }
