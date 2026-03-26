@@ -3,9 +3,11 @@ package db
 import (
 	"database/sql"
 	"embed"
-	_ "modernc.org/sqlite"
 	"os"
 	"path/filepath"
+	"strings"
+
+	_ "modernc.org/sqlite"
 )
 
 const appName = "life"
@@ -26,8 +28,21 @@ func runMigrations(db *sql.DB) error {
 			return err
 		}
 
-		if _, err := db.Exec(string(content)); err != nil {
-			return err
+		// Execute statements individually and ignore "duplicate column" / "already exists" errors
+		// to make migrations idempotent when re-running on the same DB.
+		stmts := strings.Split(string(content), ";")
+		for _, s := range stmts {
+			stmt := strings.TrimSpace(s)
+			if stmt == "" {
+				continue
+			}
+			if _, err := db.Exec(stmt); err != nil {
+				if err != nil && (strings.Contains(err.Error(), "duplicate column name") || strings.Contains(err.Error(), "already exists") || strings.Contains(err.Error(), "table .* already exists")) {
+					// ignore and continue
+					continue
+				}
+				return err
+			}
 		}
 	}
 

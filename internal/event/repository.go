@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 type Repository struct {
@@ -42,18 +43,19 @@ func (r *Repository) Insert(ctx context.Context, event *Event) error {
 	return nil
 }
 
-func (r *Repository) FindAll(ctx context.Context) ([]Event, error) {
-	query := `
-		SELECT * FROM events;
-	`
+func (r *Repository) FindByDay(ctx context.Context, day time.Time) ([]Event, error) {
+	startOfDay := time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, day.Location())
+	endOfDay := time.Date(day.Year(), day.Month(), day.Day(), 23, 59, 59, 0, day.Location())
 
-	rows, err := r.db.Query(query)
+	query := `SELECT * FROM events WHERE started_at BETWEEN ? AND ?;`
+
+	rows, err := r.db.QueryContext(ctx, query, startOfDay, endOfDay)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var events []Event
-
 	for rows.Next() {
 		var event Event
 		if err := rows.Scan(&event.ID, &event.Title, &event.Description,
@@ -61,7 +63,6 @@ func (r *Repository) FindAll(ctx context.Context) ([]Event, error) {
 			&event.Project, &event.Origin); err != nil {
 			return events, err
 		}
-
 		events = append(events, event)
 	}
 	if err = rows.Err(); err != nil {

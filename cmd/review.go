@@ -2,18 +2,16 @@ package cmd
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"github.com/gcaixeta/life/internal/db"
 	"github.com/gcaixeta/life/internal/event"
+	"github.com/gcaixeta/life/internal/review"
 	"github.com/spf13/cobra"
-
-	flag "github.com/spf13/pflag"
 )
 
 func init() {
-	rootCmd.AddCommand()
-
+	rootCmd.AddCommand(reviewCmd)
 }
 
 var reviewCmd = &cobra.Command{
@@ -28,7 +26,14 @@ var reviewCmd = &cobra.Command{
 			panic(err)
 		}
 
-		var events []Event
+		var events []event.Event
 
+		repo := event.NewRepository(conn)
+		events, err = repo.FindByDay(ctx, time.Now().AddDate(0, 0, -1))
+		if err != nil {
+			panic(err)
+		}
+
+		review.ReviewEvents(events)
 	},
 }

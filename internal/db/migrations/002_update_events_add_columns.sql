@@ -1,0 +1,3 @@
+ALTER TABLE events ADD COLUMN rating_score INTEGER;
+ALTER TABLE events ADD COLUMN rating_note VARCHAR(1000);
+ALTER TABLE events ADD COLUMN rated_at DATETIME;

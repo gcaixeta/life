@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS events (
   category    VARCHAR(50),
   project     VARCHAR(50),
   origin      VARCHAR(50)  NOT NULL DEFAULT 'manual'
-);
+)

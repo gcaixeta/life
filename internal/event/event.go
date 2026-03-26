@@ -27,6 +27,9 @@ type Event struct {
 	Category    string
 	Project     string
 	Origin      Origin
+	Score       *int
+	Note        *string
+	RatedAt     *time.Time
 }
 
 func NewEventFromFlags(flags *flag.FlagSet) (*Event, error) {
