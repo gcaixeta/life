@@ -41,3 +41,31 @@ func (r *Repository) Insert(ctx context.Context, event *Event) error {
 	event.ID = id
 	return nil
 }
+
+func (r *Repository) FindAll(ctx context.Context) ([]Event, error) {
+	query := `
+		SELECT * FROM events;
+	`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var events []Event
+
+	for rows.Next() {
+		var event Event
+		if err := rows.Scan(&event.ID, &event.Title, &event.Description,
+			&event.Category, &event.StartedAt, &event.EndedAt,
+			&event.Project, &event.Origin); err != nil {
+			return events, err
+		}
+
+		events = append(events, event)
+	}
+	if err = rows.Err(); err != nil {
+		return events, err
+	}
+	return events, nil
+}
