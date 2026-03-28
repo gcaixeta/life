@@ -82,3 +82,4 @@ func askNote(r *bufio.Reader, message string) (string, error) {
 
 	return strings.TrimSpace(input), nil
 }
+

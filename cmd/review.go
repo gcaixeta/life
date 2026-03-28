@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gcaixeta/life/internal/db"
@@ -34,6 +35,27 @@ var reviewCmd = &cobra.Command{
 			panic(err)
 		}
 
+		if len(events) == 0 {
+			fmt.Println("No events for yesterdays. Do better!")
+		}
+
 		review.ReviewEvents(events)
+		err = repo.InsertAll(ctx, events)
+		if err != nil {
+			fmt.Println("Error trying to save the events after review")
+		}
+
+		fmt.Println("Are events updated?")
+		for i := range events {
+			score := *events[i].Score
+			ratedAt := *events[i].RatedAt
+			note := *events[i].Note
+			fmt.Printf("Event: %v. Score: %d. Rated At: %v. Note: %v",
+				events[i].Title,
+				score,
+				ratedAt,
+				note,
+			)
+		}
 	},
 }
