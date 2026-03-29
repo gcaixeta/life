@@ -96,3 +96,45 @@ func (r *Repository) InsertAll(ctx context.Context, events []Event) error {
 	}
 	return nil
 }
+
+func (r *Repository) Update(ctx context.Context, event *Event) error {
+	query := `
+		UPDATE events SET
+			title = ?,
+			description = ?,
+			started_at = ?,
+			ended_at = ?,
+			category = ?,
+			project = ?,
+			origin = ?,
+			rating_score = ?,
+			rating_note = ?,
+			rated_at = ?
+		WHERE id = ?;
+	`
+	_, err := r.db.ExecContext(ctx, query,
+		event.Title,
+		event.Description,
+		event.StartedAt,
+		event.EndedAt,
+		event.Category,
+		event.Project,
+		event.Origin,
+		event.Score,
+		event.Note,
+		event.RatedAt,
+		event.ID,
+	)
+
+	return err
+}
+
+func (r *Repository) UpdateAll(ctx context.Context, events []Event) error {
+	for i := range events {
+		err := r.Update(ctx, &events[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
